@@ -8,7 +8,7 @@ NC='\033[0m'
 
 check_dependencies() {
     echo -e "${YELLOW}[+] Checking dependencies...${NC}"
-    for cmd in subfinder assetfinder amass gau httpx ffuf gowitness eyewitness katana curl; do
+    for cmd in subfinder assetfinder amass gau httpx ffuf aquatone gowitness eyewitness katana curl; do
         if ! command -v $cmd &> /dev/null; then
             echo -e "${RED}[-] $cmd is not installed.${NC}"
             exit 1
@@ -142,6 +142,14 @@ fi
 echo -e "${YELLOW}[*] Checking which subdomains are live with httpx...${NC}"
 httpx -l "$OUTPUT_DIR/all_subs.txt" -silent > "$OUTPUT_DIR/live.txt"
 echo -e "${GREEN}[+] Live subdomains: $(wc -l < "$OUTPUT_DIR/live.txt")${NC}"
+
+# aquatone
+if ask_run "aquatone screeshots"; then
+    echo -e "${YELLOW}[*] Running aquatone...${NC}"
+    mkdir -p "$OUTPUT_DIR/aquatone"
+    cat "$OUTPUT_DIR/live.txt" | aquatone -ports large -out "$OUTPUT_DIR/aquatone"
+    echo -e "${GREEN}[+] aquatone done.${NC}"
+fi
 
 # gowitness
 if ask_run "gowitness screenshots"; then
