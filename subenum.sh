@@ -38,12 +38,14 @@ if [ -z "$DOMAIN" ]; then
     usage
 fi
 
-# Expand ~ to $HOME
-OUTPUT_DIR="${OUTPUT_DIR:-$DOMAIN}"
-OUTPUT_DIR="${OUTPUT_DIR/#\~/$HOME}"
-
-# Always append domain name
-OUTPUT_DIR="${OUTPUT_DIR}/${DOMAIN}"
+# If -o is provided, expand ~ to $HOME, then append domain
+if [ -n "$OUTPUT_DIR" ]; then
+    OUTPUT_DIR="${OUTPUT_DIR/#\~/$HOME}"
+    OUTPUT_DIR="${OUTPUT_DIR%/}/$DOMAIN"  # ensure no trailing slash before appending domain
+else
+    # If -o not provided, just use domain as output dir (current dir/domain)
+    OUTPUT_DIR="$DOMAIN"
+fi
 
 mkdir -p "$OUTPUT_DIR"
 echo -e "${GREEN}[+] Output will be saved in $OUTPUT_DIR${NC}"
