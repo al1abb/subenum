@@ -147,7 +147,7 @@ echo -e "${GREEN}[+] Live subdomains: $(wc -l < "$OUTPUT_DIR/live.txt")${NC}"
 if ask_run "aquatone screeshots"; then
     echo -e "${YELLOW}[*] Running aquatone...${NC}"
     mkdir -p "$OUTPUT_DIR/aquatone"
-    cat "$OUTPUT_DIR/live.txt" | aquatone -ports large -out "$OUTPUT_DIR/aquatone"
+    cat "$OUTPUT_DIR/live.txt" | aquatone -ports large -http-timeout 10000 -screenshot-timeout 10000 -threads 1 -out "$OUTPUT_DIR/aquatone"
     echo -e "${GREEN}[+] aquatone done.${NC}"
 fi
 
