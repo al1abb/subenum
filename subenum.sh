@@ -61,21 +61,17 @@ echo -e "${YELLOW}[*] Running Assetfinder...${NC}"
 assetfinder --subs-only "$DOMAIN" > "$OUTPUT_DIR/assetfinder.txt"
 echo -e "${GREEN}[+] Assetfinder done.${NC}"
 
-if ask_run "amass"; then
-    echo -e "${YELLOW}[*] Running Amass...${NC}"
-    amass enum -passive -d "$DOMAIN" > "$OUTPUT_DIR/amass.txt"
-    echo -e "${GREEN}[+] Amass done.${NC}"
-fi
+echo -e "${YELLOW}[*] Running Amass...${NC}"
+amass enum -passive -d "$DOMAIN" > "$OUTPUT_DIR/amass.txt"
+echo -e "${GREEN}[+] Amass done.${NC}"
 
-if ask_run "crt.sh scraping"; then
-  echo -e "${YELLOW}[*] Scraping crt.sh...${NC}"
-  curl -s "https://crt.sh/?q=%25.$DOMAIN" |
-    grep -oP "(?<=<TD>)[a-zA-Z0-9\\.*\\-]+(?=</TD>)" |
-    grep "$DOMAIN" |
-    sed 's/\\*\\.//g' |
-    sort -u > "$OUTPUT_DIR/crtsh.txt"
-  echo -e "${GREEN}[+] crt.sh scraping done.${NC}"
-fi
+echo -e "${YELLOW}[*] Scraping crt.sh...${NC}"
+curl -s "https://crt.sh/?q=%25.$DOMAIN" |
+  grep -oP "(?<=<TD>)[a-zA-Z0-9\\.*\\-]+(?=</TD>)" |
+  grep "$DOMAIN" |
+  sed 's/\\*\\.//g' |
+  sort -u > "$OUTPUT_DIR/crtsh.txt"
+echo -e "${GREEN}[+] crt.sh scraping done.${NC}"
 
 if ask_run "ffuf subdomain bruteforce"; then
     read -p "Enter path to wordlist [default: /usr/share/wordlists/dirb/common.txt]: " WORDLIST
@@ -132,12 +128,6 @@ cat "$OUTPUT_DIR"/subfinder.txt \
 
 echo -e "${GREEN}[+] Total unique cleaned subdomains: $(wc -l < "$OUTPUT_DIR/all_subs.txt")${NC}"
 
-if ask_run "gau"; then
-    echo -e "${YELLOW}[*] Running gau...${NC}"
-    gau "$DOMAIN" > "$OUTPUT_DIR/gau.txt"
-    echo -e "${GREEN}[+] gau done.${NC}"
-fi
-
 # Live check
 echo -e "${YELLOW}[*] Checking which subdomains are live with httpx...${NC}"
 httpx -l "$OUTPUT_DIR/all_subs.txt" -silent > "$OUTPUT_DIR/live.txt"
@@ -167,12 +157,20 @@ if ask_run "EyeWitness screenshots"; then
     echo -e "${GREEN}[+] EyeWitness done.${NC}"
 fi
 
+# gau
+echo -e "${YELLOW}[*] Running gau...${NC}"
+gau "$DOMAIN" > "$OUTPUT_DIR/gau.txt"
+echo -e "${GREEN}[+] gau done.${NC}"
+
 # katana
-if ask_run "katana crawling"; then
-    echo -e "${YELLOW}[*] Running katana...${NC}"
-    katana -list "$OUTPUT_DIR/live.txt" -o "$OUTPUT_DIR/katana.txt"
-    echo -e "${GREEN}[+] katana done.${NC}"
-fi
+echo -e "${YELLOW}[*] Running katana...${NC}"
+katana -list "$OUTPUT_DIR/live.txt" -o "$OUTPUT_DIR/katana.txt"
+echo -e "${GREEN}[+] katana done.${NC}"
+
+# hakrawler
+echo -e "${YELLOW}[*] Running hakrawler...${NC}"
+cat "$OUTPUT_DIR/live.txt" | hakrawler -u > "$OUTPUT_DIR/hakrawler.txt"
+echo -e "${GREEN}[+] hakrawler done.${NC}"
 
 # Report
 REPORT_FILE="$OUTPUT_DIR/report.txt"

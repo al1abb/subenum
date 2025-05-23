@@ -29,12 +29,13 @@ Make sure the following tools are installed and available in your $PATH:
 - subfinder
 - assetfinder
 - amass
-- gau
 - httpx
 - ffuf
 - aquatone
 - gowitness
 - eyewitness
+- gau
 - katana
+- hakrawler
 - curl
 - jq
