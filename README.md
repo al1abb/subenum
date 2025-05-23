@@ -32,6 +32,7 @@ Make sure the following tools are installed and available in your $PATH:
 - gau
 - httpx
 - ffuf
+- aquatone
 - gowitness
 - eyewitness
 - katana
