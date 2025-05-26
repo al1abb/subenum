@@ -8,7 +8,7 @@ NC='\033[0m'
 
 check_dependencies() {
     echo -e "${YELLOW}[+] Checking dependencies...${NC}"
-    for cmd in subfinder assetfinder amass gau httpx ffuf aquatone gowitness eyewitness katana curl; do
+    for cmd in subfinder assetfinder amass gau httpx ffuf aquatone gowitness eyewitness katana curl jq dnsx hakrawler findomain chaos httprobe subzy waybackurls; do
         if ! command -v $cmd &> /dev/null; then
             echo -e "${RED}[-] $cmd is not installed.${NC}"
             exit 1
@@ -64,6 +64,14 @@ echo -e "${GREEN}[+] Assetfinder done.${NC}"
 echo -e "${YELLOW}[*] Running Amass...${NC}"
 amass enum -passive -d "$DOMAIN" > "$OUTPUT_DIR/amass.txt"
 echo -e "${GREEN}[+] Amass done.${NC}"
+
+echo -e "${YELLOW}[*] Running findomain...${NC}"
+findomain --target "$DOMAIN" --quiet --output "$OUTPUT_DIR/findomain.txt"
+echo -e "${GREEN}[+] findomain done.${NC}"
+
+echo -e "${YELLOW}[*] Running chaos...${NC}"
+chaos -d "$DOMAIN" -silent > "$OUTPUT_DIR/chaos.txt"
+echo -e "${GREEN}[+] chaos done.${NC}"
 
 echo -e "${YELLOW}[*] Scraping crt.sh...${NC}"
 curl -s "https://crt.sh/?q=%25.$DOMAIN" |
@@ -128,10 +136,24 @@ cat "$OUTPUT_DIR"/subfinder.txt \
 
 echo -e "${GREEN}[+] Total unique cleaned subdomains: $(wc -l < "$OUTPUT_DIR/all_subs.txt")${NC}"
 
-# Live check
-echo -e "${YELLOW}[*] Checking which subdomains are live with httpx...${NC}"
-httpx -l "$OUTPUT_DIR/all_subs.txt" -silent > "$OUTPUT_DIR/live.txt"
-echo -e "${GREEN}[+] Live subdomains: $(wc -l < "$OUTPUT_DIR/live.txt")${NC}"
+# Live check with httpx
+echo -e "${YELLOW}[*] Running httpx...${NC}"
+httpx -l "$OUTPUT_DIR/all_subs.txt" -silent > "$OUTPUT_DIR/httpx.txt"
+echo -e "${GREEN}[+] httpx done.${NC}"
+
+# Live check with httprobe
+echo -e "${YELLOW}[*] Running httprobe...${NC}"
+cat "$OUTPUT_DIR/all_subs.txt" | httprobe > "$OUTPUT_DIR/httprobe.txt"
+echo -e "${GREEN}[+] httprobe done.${NC}"
+
+# dnsx check
+echo -e "${YELLOW}[*] Running dnsx...${NC}"
+dnsx -l "$OUTPUT_DIR/all_subs.txt" -t 1 -rl 1 -o "$OUTPUT_DIR/dnsx.txt" -retry 3
+echo -e "${GREEN}[+] dnsx done.${NC}"
+
+# Combine live results
+sort -u "$OUTPUT_DIR/httpx.txt" "$OUTPUT_DIR/httprobe.txt" "$OUTPUT_DIR/dnsx.txt" > "$OUTPUT_DIR/live.txt"
+echo -e "${GREEN}[+] Combined live subdomains saved to $OUTPUT_DIR/live.txt (${YELLOW}$(wc -l < "$OUTPUT_DIR/live.txt")${GREEN})${NC}"
 
 # aquatone
 if ask_run "aquatone screeshots"; then
@@ -172,7 +194,17 @@ echo -e "${YELLOW}[*] Running hakrawler...${NC}"
 cat "$OUTPUT_DIR/live.txt" | hakrawler -u > "$OUTPUT_DIR/hakrawler.txt"
 echo -e "${GREEN}[+] hakrawler done.${NC}"
 
-# Report
+# waybackurls
+echo -e "${YELLOW}[*] Running waybackurls...${NC}"
+cat "$OUTPUT_DIR/live.txt" | waybackurls > "$OUTPUT_DIR/waybackurls.txt"
+echo -e "${GREEN}[+] waybackurls done.${NC}"
+
+# subzy subdomain takeover check
+echo -e "${YELLOW}[*] Running subzy...${NC}"
+subzy run --targets "$OUTPUT_DIR/live.txt" --hide_fails --output "$OUTPUT_DIR/subzy.txt"
+echo -e "${GREEN}[+] subzy done. Output saved to $OUTPUT_DIR/subzy.txt${NC}"
+
+# Final Report
 REPORT_FILE="$OUTPUT_DIR/report.txt"
 echo -e "${YELLOW}[*] Generating report...${NC}"
 {
@@ -183,5 +215,7 @@ echo -e "${YELLOW}[*] Generating report...${NC}"
     echo "Live Subdomains: $(wc -l < "$OUTPUT_DIR/live.txt")"
     [ -f "$OUTPUT_DIR/gau.txt" ] && echo "GAU URLs: $(wc -l < "$OUTPUT_DIR/gau.txt")"
     [ -f "$OUTPUT_DIR/katana.txt" ] && echo "Katana URLs: $(wc -l < "$OUTPUT_DIR/katana.txt")"
+    [ -f "$OUTPUT_DIR/subzy.txt" ] && echo "Potential Subdomain Takeovers: $(grep -c '^http' "$OUTPUT_DIR/subzy.txt")"
 } > "$REPORT_FILE"
 echo -e "${GREEN}[+] Report saved at $REPORT_FILE${NC}"
+echo $REPORT_FILE
