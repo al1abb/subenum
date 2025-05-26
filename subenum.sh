@@ -143,7 +143,7 @@ echo -e "${GREEN}[+] httpx done.${NC}"
 
 # Live check with httprobe
 echo -e "${YELLOW}[*] Running httprobe...${NC}"
-cat "$OUTPUT_DIR/all_subs.txt" | httprobe > "$OUTPUT_DIR/httprobe.txt"
+cat "$OUTPUT_DIR/all_subs.txt" | httprobe | sed 's|^https\?://||' | sort -u > "$OUTPUT_DIR/httprobe.txt"
 echo -e "${GREEN}[+] httprobe done.${NC}"
 
 # dnsx check
