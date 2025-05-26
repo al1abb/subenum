@@ -66,7 +66,7 @@ amass enum -passive -d "$DOMAIN" > "$OUTPUT_DIR/amass.txt"
 echo -e "${GREEN}[+] Amass done.${NC}"
 
 echo -e "${YELLOW}[*] Running findomain...${NC}"
-findomain --target "$DOMAIN" --quiet --output "$OUTPUT_DIR/findomain.txt"
+findomain --target "$DOMAIN" --quiet --output > "$OUTPUT_DIR/findomain.txt"
 echo -e "${GREEN}[+] findomain done.${NC}"
 
 echo -e "${YELLOW}[*] Running chaos...${NC}"
