@@ -136,6 +136,11 @@ cat "$OUTPUT_DIR"/subfinder.txt \
     grep -v '\*' |
     sort -fu > "$OUTPUT_DIR/all_subs.txt"
 
+# dnsx check
+echo -e "${YELLOW}[*] Running dnsx...${NC}"
+dnsx -l "$OUTPUT_DIR/all_subs.txt" -t 1 -rl 1 -o "$OUTPUT_DIR/dnsx.txt" -retry 3
+echo -e "${GREEN}[+] dnsx done.${NC}"
+
 echo -e "${GREEN}[+] Total unique cleaned subdomains: $(wc -l < "$OUTPUT_DIR/all_subs.txt")${NC}"
 
 # Live check with httpx
@@ -148,13 +153,8 @@ echo -e "${YELLOW}[*] Running httprobe...${NC}"
 cat "$OUTPUT_DIR/all_subs.txt" | httprobe | sed 's|^https\?://||' | sort -u > "$OUTPUT_DIR/httprobe.txt"
 echo -e "${GREEN}[+] httprobe done.${NC}"
 
-# dnsx check
-echo -e "${YELLOW}[*] Running dnsx...${NC}"
-dnsx -l "$OUTPUT_DIR/all_subs.txt" -t 1 -rl 1 -o "$OUTPUT_DIR/dnsx.txt" -retry 3
-echo -e "${GREEN}[+] dnsx done.${NC}"
-
 # Combine live results
-sort -u "$OUTPUT_DIR/httpx.txt" "$OUTPUT_DIR/httprobe.txt" "$OUTPUT_DIR/dnsx.txt" > "$OUTPUT_DIR/live.txt"
+sort -u "$OUTPUT_DIR/httpx.txt" "$OUTPUT_DIR/httprobe.txt" > "$OUTPUT_DIR/live.txt"
 echo -e "${GREEN}[+] Combined live subdomains saved to $OUTPUT_DIR/live.txt (${YELLOW}$(wc -l < "$OUTPUT_DIR/live.txt")${GREEN})${NC}"
 
 # aquatone
@@ -177,7 +177,7 @@ fi
 if ask_run "EyeWitness screenshots"; then
     echo -e "${YELLOW}[*] Running EyeWitness...${NC}"
     mkdir -p "$OUTPUT_DIR/eyewitness"
-    eyewitness --web -f "$OUTPUT_DIR/live.txt" --no-prompt -d "$OUTPUT_DIR/eyewitness"
+    eyewitness --web -f "$OUTPUT_DIR/live.txt" --no-prompt --timeout 13 --max-retries 3 -d "$OUTPUT_DIR/eyewitness"
     echo -e "${GREEN}[+] EyeWitness done.${NC}"
 fi
 

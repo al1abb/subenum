@@ -1,0 +1,16 @@
+# Add finalrecon to subenum.sh
+
+# Fix hakrawler (Maybe does not need fixing?)
+Works fine
+
+# Fix $DOMAIN.txt file saved in current dir of the program (+)
+Issue is because of findomain tool!
+
+# Httpx adds protocol to subdomains and when live checking is over,
+# it adds protocol://domain to live.txt files
+Fixed
+
+# Check dnsx (if it puts things to live.txt) because in 
+# m10payments.com example it was putting things like 
+# keyclock.m10payments.com to live.txt
+Remove dnsx from live check and put dnsx after ffuf before live check
