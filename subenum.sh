@@ -196,7 +196,7 @@ echo -e "${GREEN}[+] katana done.${NC}"
 
 # hakrawler
 echo -e "${YELLOW}[*] Running hakrawler...${NC}"
-cat "$OUTPUT_DIR/live.txt" | hakrawler -u > "$OUTPUT_DIR/hakrawler.txt"
+cat "$OUTPUT_DIR/live_http.txt" | hakrawler -u > "$OUTPUT_DIR/hakrawler.txt"
 echo -e "${GREEN}[+] hakrawler done.${NC}"
 
 # waybackurls
