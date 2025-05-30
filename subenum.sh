@@ -157,11 +157,14 @@ echo -e "${GREEN}[+] httprobe done.${NC}"
 sort -u "$OUTPUT_DIR/httpx.txt" "$OUTPUT_DIR/httprobe.txt" > "$OUTPUT_DIR/live.txt"
 echo -e "${GREEN}[+] Combined live subdomains saved to $OUTPUT_DIR/live.txt (${YELLOW}$(wc -l < "$OUTPUT_DIR/live.txt")${GREEN})${NC}"
 
+# Create live_http.txt with https:// prefix for aquatone
+sed 's|^|https://|' "$OUTPUT_DIR/live.txt" > "$OUTPUT_DIR/live_http.txt"
+
 # aquatone
 if ask_run "aquatone screeshots"; then
     echo -e "${YELLOW}[*] Running aquatone...${NC}"
     mkdir -p "$OUTPUT_DIR/aquatone"
-    cat "$OUTPUT_DIR/live.txt" | aquatone -ports large -http-timeout 10000 -screenshot-timeout 10000 -threads 1 -out "$OUTPUT_DIR/aquatone"
+    cat "$OUTPUT_DIR/live_http.txt" | aquatone -ports large -http-timeout 10000 -screenshot-timeout 10000 -threads 1 -out "$OUTPUT_DIR/aquatone"
     echo -e "${GREEN}[+] aquatone done.${NC}"
 fi
 
