@@ -129,6 +129,8 @@ fi
 cat "$OUTPUT_DIR"/subfinder.txt \
     "$OUTPUT_DIR"/assetfinder.txt \
     "$OUTPUT_DIR"/crtsh.txt \
+    "$OUTPUT_DIR"/findomain.txt \
+    "$OUTPUT_DIR"/chaos.txt \
     "$OUTPUT_DIR"/ffuf/ffuf_subs.txt 2>/dev/null |
     sed 's/^www\.//' |
     grep -v '\*' |
@@ -138,7 +140,7 @@ echo -e "${GREEN}[+] Total unique cleaned subdomains: $(wc -l < "$OUTPUT_DIR/all
 
 # Live check with httpx
 echo -e "${YELLOW}[*] Running httpx...${NC}"
-httpx -l "$OUTPUT_DIR/all_subs.txt" -silent > "$OUTPUT_DIR/httpx.txt"
+httpx -l "$OUTPUT_DIR/all_subs.txt" -silent | sed 's|^https\?://||' | sort -u > "$OUTPUT_DIR/httpx.txt"
 echo -e "${GREEN}[+] httpx done.${NC}"
 
 # Live check with httprobe
@@ -218,4 +220,4 @@ echo -e "${YELLOW}[*] Generating report...${NC}"
     [ -f "$OUTPUT_DIR/subzy.txt" ] && echo "Potential Subdomain Takeovers: $(grep -c '^http' "$OUTPUT_DIR/subzy.txt")"
 } > "$REPORT_FILE"
 echo -e "${GREEN}[+] Report saved at $REPORT_FILE${NC}"
-echo $REPORT_FILE
+cat $REPORT_FILE
